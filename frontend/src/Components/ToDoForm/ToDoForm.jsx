@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   TextField,
   Button,
@@ -7,38 +7,46 @@ import {
   Typography,
   FormControl,
 } from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+
+const validationSchema = Yup.object({
+  title: Yup.string().required("Title is required"),
+  description: Yup.string().required("Description is required"),
+});
 
 const ToDoForm = ({ editData, drawerMode, onSubmit, setOpenDrawer }) => {
-  console.log("🚀 ~ ToDoForm ~ editData:", editData)
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "Pending",
+  console.log("🚀 ~ ToDoForm ~ drawerMode:", drawerMode)
+  const formik = useFormik({
+    initialValues: {
+      title: "",
+      description: "",
+      status: "Pending",
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      onSubmit(values);
+      setOpenDrawer(false);
+      formik.resetForm();
+    },
   });
 
   useEffect(() => {
     if (drawerMode === "edit" && editData) {
-      setFormData({
-        title: editData.title,
-        description: editData.description,
-        status: editData.status,
+      formik.setValues({
+        title: editData?.title,
+        description: editData?.description,
+        status: editData?.status,
+      });
+    }
+        if (drawerMode === "view" && editData) {
+      formik.setValues({
+        title: editData?.title,
+        description: editData?.description,
+        status: editData?.status,
       });
     }
   }, [drawerMode, editData]);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-    setOpenDrawer(false);
-    setFormData({ title: "", description: "", status: "Pending" });
-  };
 
   return (
     <Paper
@@ -46,6 +54,7 @@ const ToDoForm = ({ editData, drawerMode, onSubmit, setOpenDrawer }) => {
       sx={{
         p: 4,
         maxWidth: 500,
+        height: "88vh",
         borderRadius: 3,
         mx: "auto",
         mt: 2,
@@ -60,49 +69,60 @@ const ToDoForm = ({ editData, drawerMode, onSubmit, setOpenDrawer }) => {
           textAlign: "center",
         }}
       >
-        {drawerMode === "edit" ? "Edit To-Do" : "Add New To-Do"}
+        {drawerMode === "view" ? "View To-Do" : drawerMode === "edit" ? "EDIT To-Do" : "ADD To-Do"}
       </Typography>
 
-      <Box component="form" onSubmit={handleSubmit}>
+      <Box component="form" onSubmit={formik.handleSubmit}>
+        {/* Title Field */}
         <TextField
           fullWidth
           label="Title"
           name="title"
-          value={formData.title}
-          onChange={handleChange}
+          value={formik.values.title}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           margin="normal"
-          required
+          error={formik.touched.title && Boolean(formik.errors.title)}
+          helperText={formik.touched.title && formik.errors.title}
           sx={{
             "& .MuiInputBase-root": {
               borderRadius: 2,
             },
           }}
+          disabled={drawerMode === "view"}
+
         />
 
+        {/* Description Field */}
         <TextField
           fullWidth
           label="Description"
           name="description"
-          value={formData.description}
-          onChange={handleChange}
+          value={formik.values.description}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           margin="normal"
           multiline
           rows={3}
-          required
+          error={formik.touched.description && Boolean(formik.errors.description)}
+          helperText={formik.touched.description && formik.errors.description}
           sx={{
             "& .MuiInputBase-root": {
               borderRadius: 2,
             },
           }}
+          disabled={drawerMode === "view"}
         />
-        {drawerMode === "edit" && (
+
+        {/* Status — only in edit mode */}
+        {drawerMode === "edit" || drawerMode === "view" ? (
           <FormControl fullWidth margin="normal">
             <TextField
               select
               label="Status"
               name="status"
-              value={formData.status}
-              onChange={handleChange}
+              value={formik.values.status}
+              onChange={formik.handleChange}
               SelectProps={{
                 native: true,
               }}
@@ -111,14 +131,16 @@ const ToDoForm = ({ editData, drawerMode, onSubmit, setOpenDrawer }) => {
                   borderRadius: 2,
                 },
               }}
+              disabled={drawerMode === "view"}
             >
               <option value="Pending">Pending</option>
               <option value="In-Progress">In-Progress</option>
               <option value="Completed">Completed</option>
             </TextField>
           </FormControl>
-        )}
+        ): null}
 
+       {drawerMode !== "view" && (
         <Button
           type="submit"
           variant="contained"
@@ -132,8 +154,8 @@ const ToDoForm = ({ editData, drawerMode, onSubmit, setOpenDrawer }) => {
             textTransform: "none",
           }}
         >
-          {drawerMode === "edit" ? "Update To-Do" : "Create To-Do"}
-        </Button>
+          {drawerMode === "edit" ? "UPDATE To-Do" : "ADD To-Do"}
+        </Button>)}
       </Box>
     </Paper>
   );

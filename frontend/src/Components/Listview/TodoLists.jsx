@@ -9,12 +9,23 @@ import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import ConfirmDialog from "./ConfirmDialogue";
 import Pagination from "@mui/material/Pagination";
 
-const TodoLists = ({ todos, handleOpenDrawer, handleEditOpen, handleDeleteConfirm, confirmOpen, setConfirmOpen, selectedId, setSelectedId }) => {
+const TodoLists = ({
+  todos,
+  handleOpenDrawer,
+  handleEditOpen,
+  handleDeleteConfirm,
+  confirmOpen,
+  setConfirmOpen,
+  selectedId,
+  setSelectedId,
+  handleViewOpen,
+}) => {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
 
@@ -27,59 +38,67 @@ const TodoLists = ({ todos, handleOpenDrawer, handleEditOpen, handleDeleteConfir
     setConfirmOpen(true);
   };
 
-const getStatusChip = (status) => {
-  const getBackgroundColor = () => {
-    switch (status) {
-      case "Pending": return "#ecf7ff";
-      case "Completed": return "#ecf6f0";
-      case "In-Progress": return "#fff4e5";
-      default: return "#ecf7ff";
-    }
-  };
+  const getStatusChip = (status) => {
+    const getBackgroundColor = () => {
+      switch (status) {
+        case "Pending":
+          return "#ecf7ff";
+        case "Completed":
+          return "#ecf6f0";
+        case "In-Progress":
+          return "#fff4e5";
+        default:
+          return "#ecf7ff";
+      }
+    };
 
-  const getTextColor = () => {
-    switch (status) {
-      case "Pending": return "#429fd7";
-      case "Completed": return "#0F8741";
-      case "In-Progress": return "rgb(255,152,0)";
-      default: return "#429fd7";
-    }
-  };
+    const getTextColor = () => {
+      switch (status) {
+        case "Pending":
+          return "#429fd7";
+        case "Completed":
+          return "#0F8741";
+        case "In-Progress":
+          return "rgb(255,152,0)";
+        default:
+          return "#429fd7";
+      }
+    };
 
-  return (
-    <div
-      style={{
-        backgroundColor: getBackgroundColor(),
-        color: getTextColor(),
-        fontSize: "12px",
-        height: "28px",
-        width: "fit-content",
-        maxWidth: "120px",
-        borderRadius: "50px",
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-start",
-        padding: "0 10px",
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis",
-        fontWeight: 600,
-      }}
-    >
-      <span
+    return (
+      <div
         style={{
-          display: "inline-block",
-          width: "6px",
-          height: "6px",
-          borderRadius: "50%",
-          marginRight: "6px",
-          backgroundColor: getTextColor(),
+          backgroundColor: getBackgroundColor(),
+          color: getTextColor(),
+          fontSize: "12px",
+          height: "28px",
+          width: "fit-content",
+          maxWidth: "120px",
+          borderRadius: "50px",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          padding: "0 10px",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
+          fontWeight: 600,
         }}
-      ></span>
-      {status}
-    </div>
-  );
-};
+      >
+        <span
+          style={{
+            display: "inline-block",
+            width: "6px",
+            height: "6px",
+            borderRadius: "50%",
+            marginRight: "6px",
+            backgroundColor: getTextColor(),
+          }}
+        ></span>
+        {status}
+      </div>
+    );
+  };
 
   return (
     <Container-fluid>
@@ -89,7 +108,8 @@ const getStatusChip = (status) => {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginRight: "10px",
+          marginRight: "16px",
+          marginBottom: "20px",
         }}
       >
         <Button
@@ -102,8 +122,19 @@ const getStatusChip = (status) => {
         </Button>
       </div>
 
-      <TableContainer component={Paper} className="mx-2">
-        <Table sx={{ minWidth: 650, borderTop: "1px solid #e0e0e0", marginTop: "20px" }} aria-label="simple table mt-2">
+      <TableContainer
+        component={Paper}
+        className="mx-2"
+        style={{ width: "98%", margin: "0 auto" }}
+      >
+        <Table
+          sx={{
+            minWidth: 650,
+            borderTop: "1px solid #e0e0e0",
+            marginTop: "20px",
+          }}
+          aria-label="simple table mt-2"
+        >
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600 }}>Sl.No</TableCell>
@@ -114,36 +145,56 @@ const getStatusChip = (status) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {todos
-              .slice((page - 1) * rowsPerPage, page * rowsPerPage)
-              .map((row, index) => (
-                <TableRow key={row._id}>
-                  <TableCell component="th" scope="row">
-                    {/* {index + 1} */}
-                    {(page - 1) * rowsPerPage + index + 1}
-                  </TableCell>
-                  <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{getStatusChip(row.status)}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEditOpen(row)}
-                      aria-label="edit"
-                    >
-                      <EditIcon />
-                    </IconButton>
+            {todos?.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  align="center"
+                  sx={{ py: 3, fontSize: "18px" }}
+                >
+                  No Lists Found
+                </TableCell>
+              </TableRow>
+            ) : (
+              todos
+                .slice((page - 1) * rowsPerPage, page * rowsPerPage)
+                .map((row, index) => (
+                  <TableRow key={row._id}>
+                    <TableCell component="th" scope="row">
+                      {/* {index + 1} */}
+                      {(page - 1) * rowsPerPage + index + 1}
+                    </TableCell>
+                    <TableCell>{row.title}</TableCell>
+                    <TableCell>{row.description}</TableCell>
+                    <TableCell>{getStatusChip(row.status)}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="#070707e6"
+                        onClick={() => handleViewOpen(row)}
+                        aria-label="view"
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
 
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteClick(row._id)}
-                      aria-label="delete"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEditOpen(row)}
+                        aria-label="edit"
+                      >
+                        <EditIcon />
+                      </IconButton>
+
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteClick(row._id)}
+                        aria-label="delete"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
